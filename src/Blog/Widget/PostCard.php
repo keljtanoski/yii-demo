@@ -31,13 +31,13 @@ class PostCard extends Widget
         $this->initOptions();
 
         return implode("\n", [
-            Html::beginTag('div', $this->options),
-            Html::beginTag('div', ['class' => 'card-body d-flex flex-column align-items-start']),
+            Html::openTag('div', $this->options),
+            Html::openTag('div', ['class' => 'card-body d-flex flex-column align-items-start']),
             $this->renderHead(),
             $this->renderBody(),
             $this->renderTags(),
-            Html::endTag('div'),
-            Html::endTag('div'),
+            Html::closeTag('div'),
+            Html::closeTag('div'),
         ]);
     }
 
@@ -47,27 +47,30 @@ class PostCard extends Widget
             Html::encode($this->post->getTitle()),
             $this->urlGenerator->generate('blog/post', ['slug' => $this->post->getSlug()]),
             ['class' => 'mb-0 h4 text-decoration-none'] // stretched-link
-        );
+        )
+        ->render();
     }
 
     protected function renderBody(): string
     {
-        return Html::div(
-            $this->post->getPublishedAt()->format('M, d') . ' by ' . Html::a(
-                Html::encode($this->post->getUser()->getLogin()),
-                $this->urlGenerator->generate('user/profile', ['login' => $this->post->getUser()->getLogin()])
-            ),
-            ['class' => 'mb-1 text-muted', 'encode' => false]
-        ) . Html::p(
-            Html::encode(mb_substr($this->post->getContent(), 0, 400))
-            . (mb_strlen($this->post->getContent()) > 400 ? '…' : ''),
-            ['class' => 'card-text mb-auto']
+        $return = Html::openTag('div', ['class' => 'card-text mb-auto']);
+        $return .= $this->post->getPublishedAt()->format('M, d');
+        $return .= ' by ';
+        $return .= Html::a(
+            $this->post->getUser()->getLogin(),
+            $this->urlGenerator->generate('user/profile', ['login' => $this->post->getUser()->getLogin()])
+        )->class('mb-1 text-muted');
+
+        $return .= Html::p(
+            mb_substr($this->post->getContent(), 0, 400)
+            . (mb_strlen($this->post->getContent()) > 400 ? '…' : '')
         );
+        return $return . Html::closeTag('div');
     }
 
     protected function renderTags(): string
     {
-        $return = Html::beginTag('div', ['class' => 'mt-3']);
+        $return = Html::openTag('div', ['class' => 'mt-3']);
         foreach ($this->post->getTags() as $tag) {
             $return .= Html::a(
                 Html::encode($tag->getLabel()),
@@ -75,7 +78,7 @@ class PostCard extends Widget
                 ['class' => 'btn btn-outline-secondary btn-sm me-2 mt-1']
             );
         }
-        return $return . Html::endTag('div');
+        return $return . Html::closeTag('div');
     }
 
     protected function initOptions(): void
